@@ -1,0 +1,130 @@
+import java.util.*;
+
+class Stock {
+    String symbol;
+    String name;
+    double price;
+
+    public Stock(String symbol, String name, double price) {
+        this.symbol = symbol;
+        this.name = name;
+        this.price = price;
+    }
+
+    public void updatePrice() {
+        Random rand = new Random();
+        this.price += rand.nextDouble() * 10 - 5;
+        if (this.price < 1) this.price = 1; 
+    }
+}
+
+class Portfolio {
+    Map<String, Integer> stocks;
+    double cash;
+
+    public Portfolio(double initialCash) {
+        this.stocks = new HashMap<>();
+        this.cash = initialCash;
+    }
+
+    public void buyStock(Stock stock, int quantity) {
+        double cost = stock.price * quantity;
+        if (cost <= cash) {
+            stocks.put(stock.symbol, stocks.getOrDefault(stock.symbol, 0) + quantity);
+            cash -= cost;
+            System.out.println("Bought " + quantity + " shares of " + stock.name);
+        } else {
+            System.out.println("Not enough cash to buy " + quantity + " shares of " + stock.name);
+        }
+    }
+
+    public void sellStock(Stock stock, int quantity) {
+        if (stocks.getOrDefault(stock.symbol, 0) >= quantity) {
+            stocks.put(stock.symbol, stocks.get(stock.symbol) - quantity);
+            cash += stock.price * quantity;
+            System.out.println("Sold " + quantity + " shares of " + stock.name);
+        } else {
+            System.out.println("Not enough shares to sell");
+        }
+    }
+
+    public void printPortfolio(Map<String, Stock> market) {
+        System.out.println("Cash: $" + cash);
+        System.out.println("Stocks:");
+        for (Map.Entry<String, Integer> entry : stocks.entrySet()) {
+            Stock stock = market.get(entry.getKey());
+            System.out.println(stock.name + ": " + entry.getValue() + " shares @ $" + stock.price);
+        }
+    }
+}
+
+class StockMarket {
+    Map<String, Stock> stocks;
+
+    public StockMarket() {
+        stocks = new HashMap<>();
+        stocks.put("APPLE", new Stock("APPLE", "Apple", 150));
+        stocks.put("GOOGLE", new Stock("GOOGLE", "Alphabet", 2800));
+        stocks.put("AMAZON", new Stock("AMAZON", "Amazon", 3400));
+        stocks.put("INFOSYS", new Stock("INFOSYS", "Infosys", 2400));
+        stocks.put("TCS", new Stock("TCS", "TCS", 1500));
+        stocks.put("PAYTM", new Stock("PAYTM", "Paytm", 780));
+    }
+
+    public void updateMarket() {
+        for (Stock stock : stocks.values()) {
+            stock.updatePrice();
+        }
+    }
+
+    public void printMarket() {
+        System.out.println("Market Data:");
+        for (Stock stock : stocks.values()) {
+            System.out.println(stock.symbol + " (" + stock.name + "): $" + stock.price);
+        }
+    }
+
+    public Stock getStock(String symbol) {
+        return stocks.get(symbol);
+    }
+}
+
+public class StocingPlatformkTrad {
+    public static void main(String[] args) {
+        Scanner scanner = new Scanner(System.in);
+        StockMarket market = new StockMarket();
+        Portfolio portfolio = new Portfolio(10000); // Start with $10,000
+
+        while (true) {
+            market.updateMarket();
+            market.printMarket();
+            portfolio.printPortfolio(market.stocks);
+
+            System.out.println("Enter command (buy/sell/exit): ");
+            String command = scanner.next();
+            if (command.equals("exit")) {
+                break;
+            }
+
+            System.out.println("Enter stock symbol: ");
+            String symbol = scanner.next();
+            Stock stock = market.getStock(symbol);
+            if (stock == null) {
+                System.out.println("Invalid stock symbol");
+                continue;
+            }
+
+            System.out.println("Enter quantity: ");
+            int quantity = scanner.nextInt();
+
+            if (command.equals("buy")) {
+                portfolio.buyStock(stock, quantity);
+            } else if (command.equals("sell")) {
+                portfolio.sellStock(stock, quantity);
+            } else {
+                System.out.println("Invalid command");
+            }
+        }
+        scanner.close();
+    }
+}
